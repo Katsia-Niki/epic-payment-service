@@ -1,0 +1,46 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-document-collection-payment
+      author: nikiforova
+      changes:
+        - createCollection:
+            collectionName: payments
+            options: |
+              {
+                validator: {
+                  $jsonSchema: {
+                    bsonType: "object",
+                    required: ["order_id", "user_id", "status", "timestamp", "payment_amount"],
+                    properties: {
+                      order_id: { bsonType: "long" },
+                      user_id: { bsonType: "long" },
+                      status: { bsonType: "int" },
+                      timestamp: { bsonType: "date" },
+                      payment_amount: { bsonType: "decimal" }
+                    }
+                  }
+                },
+                validationLevel: "strict",
+                validationAction: "error"
+              }
+        - createIndex:
+            collectionName: payments
+            keys: '{"user_id": 1}'
+            options: '{"name": "idx_user_id"}'
+        - createIndex:
+            collectionName: payments
+            keys: '{"order_id": 1}'
+            options: '{"name": "idx_order_id"}'
+        - createIndex:
+            collectionName: payments
+            keys: '{"status": 1}'
+            options: '{"name": "idx_payment_status"}'
+        - createIndex:
+            collectionName: payments
+            keys: '{"timestamp": 1}'
+            options: '{"name": "idx_payment_timestamp"}'
+        - createIndex:
+            collectionName: payments
+            keys: '{"user_id": 1, "timestamp": 1}'
+            options: '{"name": "idx_payments_user_id_timestamp"}'
+
