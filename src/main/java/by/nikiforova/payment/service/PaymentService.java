@@ -1,10 +1,13 @@
 package by.nikiforova.payment.service;
 
+import by.nikiforova.payment.client.RandomNumberClient;
+import by.nikiforova.payment.dto.request.PaymentRequestDto;
+import by.nikiforova.payment.dto.response.PaymentResponseDto;
 import by.nikiforova.payment.entity.Payment;
 import by.nikiforova.payment.entity.PaymentStatus;
+import by.nikiforova.payment.mapper.PaymentMapper;
 import by.nikiforova.payment.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -17,20 +20,23 @@ import java.util.List;
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
+    private final PaymentMapper paymentMapper;
+    private final RandomNumberClient randomNumberClient;
 
-    public Payment createPayment(Long userId, Long orderId, BigDecimal paymentAmount) {
-        Payment payment = Payment.builder()
-                .userId(userId)
-                .orderId(orderId)
-                .paymentAmount(paymentAmount)
-                .timestamp(LocalDateTime.now(ZoneId.of("Europe/Minsk")))
-                .status(PaymentStatus.SUCCESS)
-                .build();
+    public PaymentResponseDto createPayment(PaymentRequestDto  paymentRequestDto) {
+        int number = randomNumberClient.getRandomNumber();
+        PaymentStatus status = (number % 2 == 0) ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
 
-        return paymentRepository.save(payment);
+        Payment payment = paymentMapper.toEntity(paymentRequestDto);
+        payment.setTimestamp(LocalDateTime.now(ZoneId.of("Europe/Minsk")));
+        payment.setStatus(status);
+
+        Payment savedPayment = paymentRepository.save(payment);
+
+        return paymentMapper.toResponseDto(savedPayment);
     }
 
-    public List<Payment> findPayments(Long userId, Long orderId, PaymentStatus status) {
+    public List<PaymentResponseDto> findPayments(Long userId, Long orderId, PaymentStatus status) {
         int criteriaCount = 0;
         if (userId != null) {
             criteriaCount++;
@@ -44,13 +50,14 @@ public class PaymentService {
         if (criteriaCount != 1) {
             throw new IllegalArgumentException("Provide exactly one filter: userId, orderId or status");
         }
+
         if (userId != null) {
-            return paymentRepository.findByUserId(userId);
+            return paymentRepository.findByUserId(userId).stream().map(paymentMapper::toResponseDto).toList();
         }
         if (orderId != null) {
-            return paymentRepository.findByOrderId(orderId);
+            return paymentRepository.findByOrderId(orderId).stream().map(paymentMapper::toResponseDto).toList();
         }
-        return paymentRepository.findByStatus(status);
+        return paymentRepository.findByStatus(status).stream().map(paymentMapper::toResponseDto).toList();
     }
 
     public BigDecimal getTotalSumForUser(Long userId, LocalDateTime from, LocalDateTime to) {
