@@ -5,6 +5,7 @@ import by.nikiforova.payment.dto.request.PaymentRequestDto;
 import by.nikiforova.payment.dto.response.PaymentResponseDto;
 import by.nikiforova.payment.entity.Payment;
 import by.nikiforova.payment.entity.PaymentStatus;
+import by.nikiforova.payment.kafka.PaymentKafkaProducer;
 import by.nikiforova.payment.mapper.PaymentMapper;
 import by.nikiforova.payment.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final PaymentMapper paymentMapper;
     private final RandomNumberClient randomNumberClient;
+    private final PaymentKafkaProducer paymentKafkaProducer;
 
     public PaymentResponseDto createPayment(PaymentRequestDto  paymentRequestDto) {
         int number = randomNumberClient.getRandomNumber();
@@ -32,6 +34,8 @@ public class PaymentService {
         payment.setStatus(status);
 
         Payment savedPayment = paymentRepository.save(payment);
+
+        paymentKafkaProducer.sendCreatePaymentEvent(savedPayment);
 
         return paymentMapper.toResponseDto(savedPayment);
     }
