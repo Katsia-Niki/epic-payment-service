@@ -8,13 +8,17 @@ import by.nikiforova.payment.entity.PaymentStatus;
 import by.nikiforova.payment.kafka.PaymentKafkaProducer;
 import by.nikiforova.payment.mapper.PaymentMapper;
 import by.nikiforova.payment.repository.PaymentRepository;
+import by.nikiforova.payment.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+
+import static by.nikiforova.payment.util.SecurityUtils.isAdmin;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +30,8 @@ public class PaymentService {
     private final PaymentKafkaProducer paymentKafkaProducer;
 
     public PaymentResponseDto createPayment(PaymentRequestDto  paymentRequestDto) {
+        SecurityUtils.checkAccess(paymentRequestDto.userId());
+
         int number = randomNumberClient.getRandomNumber();
         PaymentStatus status = (number % 2 == 0) ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
 
@@ -56,15 +62,24 @@ public class PaymentService {
         }
 
         if (userId != null) {
+            SecurityUtils.checkAccess(userId);
             return paymentRepository.findByUserId(userId).stream().map(paymentMapper::toResponseDto).toList();
         }
         if (orderId != null) {
+            if (!isAdmin()) {
+                throw new AccessDeniedException("Access is denied");
+            }
             return paymentRepository.findByOrderId(orderId).stream().map(paymentMapper::toResponseDto).toList();
+        }
+        if (!isAdmin()) {
+            throw new AccessDeniedException("Access is denied");
         }
         return paymentRepository.findByStatus(status).stream().map(paymentMapper::toResponseDto).toList();
     }
 
     public BigDecimal getTotalSumForUser(Long userId, LocalDateTime from, LocalDateTime to) {
+        SecurityUtils.checkAccess(userId);
+
         List<Payment> payments = paymentRepository.findByUserIdAndTimestampBetween(userId, from, to);
 
         BigDecimal sum = BigDecimal.ZERO;
