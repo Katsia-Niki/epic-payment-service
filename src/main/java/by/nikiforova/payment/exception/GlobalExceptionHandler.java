@@ -30,7 +30,7 @@ public class GlobalExceptionHandler {
         ErrorResponse response = new ErrorResponse(
                 LocalDateTime.now(ZoneId.of(TIMEZONE)),
                 HttpStatus.BAD_REQUEST.value(),
-                "Provide exactly one filter: userId, orderId or status",
+                e.getMessage(),
                 request.getRequestURI(),
                 null
         );
