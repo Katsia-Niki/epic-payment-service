@@ -14,7 +14,7 @@ databaseChangeLog:
                     properties: {
                       order_id: { bsonType: "long" },
                       user_id: { bsonType: "long" },
-                      status: { bsonType: "int" },
+                      status: { bsonType: "string" },
                       timestamp: { bsonType: "date" },
                       payment_amount: { bsonType: "decimal" }
                     }

@@ -26,7 +26,7 @@ public class Payment {
     @Field("order_id")
     private Long orderId;
 
-    @Field(name = "status", targetType = FieldType.INT32)
+    @Field("status")
     private PaymentStatus status;
 
     @Field("timestamp")

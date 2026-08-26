@@ -67,12 +67,12 @@ public class PaymentService {
         }
         if (orderId != null) {
             if (!isAdmin()) {
-                throw new AccessDeniedException("Access is denied");
+                throw new AccessDeniedException("Access denied");
             }
             return paymentRepository.findByOrderId(orderId).stream().map(paymentMapper::toResponseDto).toList();
         }
         if (!isAdmin()) {
-            throw new AccessDeniedException("Access is denied");
+            throw new AccessDeniedException("Access denied");
         }
         return paymentRepository.findByStatus(status).stream().map(paymentMapper::toResponseDto).toList();
     }
