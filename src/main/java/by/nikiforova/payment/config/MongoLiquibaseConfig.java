@@ -10,6 +10,8 @@ import liquibase.resource.ClassLoaderResourceAccessor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Properties;
+
 @Configuration
 public class MongoLiquibaseConfig {
 
@@ -23,10 +25,16 @@ public class MongoLiquibaseConfig {
         String changeLogPath = changeLog.replace("classpath:", "");
 
         try (MongoLiquibaseDatabase database = (MongoLiquibaseDatabase) DatabaseFactory.getInstance()
-                .openDatabase(mongoUri, null, null, null, null);
+                .openDatabase(mongoUri, null, null, MongoDriverProperties.class.getName(), null);
              Liquibase liquibase = new Liquibase(changeLogPath, new ClassLoaderResourceAccessor(), database)) {
 
             liquibase.update(new Contexts());
+        }
+    }
+
+    public static class MongoDriverProperties extends Properties {
+        public MongoDriverProperties() {
+            put("appName", "epic-payment-service");
         }
     }
 }

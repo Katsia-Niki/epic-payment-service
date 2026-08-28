@@ -4,17 +4,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
+import java.net.URI;
+
 @Component
 public class RandomNumberClient {
 
     private final RestClient restClient = RestClient.builder().build();
 
-    @Value("${random.api.url}")
+    @Value("${randomorg.api.url}")
     private String randomApiUrl;
 
     public int getRandomNumber() {
         String body = restClient.get()
-                .uri(randomApiUrl)
+                .uri(URI.create(randomApiUrl))
                 .retrieve()
                 .body(String.class);
 

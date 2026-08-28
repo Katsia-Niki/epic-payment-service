@@ -26,6 +26,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
             IllegalArgumentException e, HttpServletRequest request) {
+        log.warn("Bad request: {}", e.getMessage());
 
         ErrorResponse response = new ErrorResponse(
                 LocalDateTime.now(ZoneId.of(TIMEZONE)),

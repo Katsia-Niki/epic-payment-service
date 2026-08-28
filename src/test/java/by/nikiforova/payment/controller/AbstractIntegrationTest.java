@@ -33,7 +33,7 @@ public abstract class AbstractIntegrationTest {
     static void configureProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.mongodb.uri", MONGO::getReplicaSetUrl);
         registry.add("jwt.secret", () -> JWT_SECRET);
-        registry.add("random.api.url",
+        registry.add("randomorg.api.url",
                 () -> "http://localhost:" + WIRE_MOCK.port() + "/integers");
         registry.add("spring.autoconfigure.exclude",
                 () -> "org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration");
