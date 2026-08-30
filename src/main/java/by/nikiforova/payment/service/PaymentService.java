@@ -1,6 +1,7 @@
 package by.nikiforova.payment.service;
 
 import by.nikiforova.payment.client.RandomNumberClient;
+import by.nikiforova.payment.dto.PaymentSum;
 import by.nikiforova.payment.dto.request.PaymentRequestDto;
 import by.nikiforova.payment.dto.response.PaymentResponseDto;
 import by.nikiforova.payment.entity.Payment;
@@ -79,26 +80,13 @@ public class PaymentService {
 
     public BigDecimal getTotalSumForUser(Long userId, LocalDateTime from, LocalDateTime to) {
         SecurityUtils.checkAccess(userId);
-
-        List<Payment> payments = paymentRepository.findByUserIdAndTimestampBetween(userId, from, to);
-
-        BigDecimal sum = BigDecimal.ZERO;
-        for (Payment payment : payments) {
-            sum = sum.add(payment.getPaymentAmount());
-        }
-
-        return sum;
+        PaymentSum sum = paymentRepository.sumByUserIdAndTimestampBetween(userId, from, to);
+        return sum == null || sum.total() == null ? BigDecimal.ZERO : sum.total();
     }
 
     public BigDecimal getTotalSumForAllUsers(LocalDateTime from, LocalDateTime to) {
-        List<Payment> payments = paymentRepository.findByTimestampBetween(from, to);
-
-        BigDecimal sum = BigDecimal.ZERO;
-        for (Payment payment : payments) {
-            sum = sum.add(payment.getPaymentAmount());
-        }
-
-        return sum;
+        PaymentSum sum = paymentRepository.sumByTimestampBetween(from, to);
+        return sum == null || sum.total() == null ? BigDecimal.ZERO : sum.total();
     }
 
 }

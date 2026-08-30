@@ -1,6 +1,7 @@
 package by.nikiforova.payment.service;
 
 import by.nikiforova.payment.client.RandomNumberClient;
+import by.nikiforova.payment.dto.PaymentSum;
 import by.nikiforova.payment.dto.request.PaymentRequestDto;
 import by.nikiforova.payment.dto.response.PaymentResponseDto;
 import by.nikiforova.payment.entity.Payment;
@@ -390,22 +391,14 @@ class PaymentServiceTest {
         LocalDateTime from = LocalDateTime.of(2026, Month.MARCH, 1, 0, 0);
         LocalDateTime to = LocalDateTime.of(2026, Month.MARCH, 31, 23, 59);
 
-        Payment first = Payment.builder()
-                .userId(1L)
-                .paymentAmount(new BigDecimal("50.00"))
-                .build();
-        Payment second = Payment.builder()
-                .userId(1L)
-                .paymentAmount(new BigDecimal("25.50"))
-                .build();
-        when(paymentRepository.findByUserIdAndTimestampBetween(1L, from, to))
-                .thenReturn(List.of(first, second));
+        when(paymentRepository.sumByUserIdAndTimestampBetween(1L, from, to))
+                .thenReturn(new PaymentSum(new BigDecimal("75.50")));
 
         BigDecimal result = paymentService.getTotalSumForUser(1L, from, to);
 
         assertEquals(new BigDecimal("75.50"), result);
 
-        verify(paymentRepository).findByUserIdAndTimestampBetween(1L, from, to);
+        verify(paymentRepository).sumByUserIdAndTimestampBetween(1L, from, to);
     }
 
     @Test
@@ -419,7 +412,7 @@ class PaymentServiceTest {
 
         assertEquals("Access denied", ex.getMessage());
 
-        verify(paymentRepository, never()).findByUserIdAndTimestampBetween(any(), any(), any());
+        verify(paymentRepository, never()).sumByUserIdAndTimestampBetween(any(), any(), any());
     }
 
     @Test
@@ -428,21 +421,13 @@ class PaymentServiceTest {
         LocalDateTime from = LocalDateTime.of(2026, Month.MARCH, 1, 0, 0);
         LocalDateTime to = LocalDateTime.of(2026, Month.MARCH, 31, 23, 59);
 
-        Payment first = Payment.builder()
-                .userId(1L)
-                .paymentAmount(new BigDecimal("50.00"))
-                .build();
-        Payment second = Payment.builder()
-                .userId(1L)
-                .paymentAmount(new BigDecimal("25.50"))
-                .build();
-        when(paymentRepository.findByTimestampBetween(from, to))
-                .thenReturn(List.of(first, second));
+        when(paymentRepository.sumByTimestampBetween(from, to))
+                .thenReturn(new PaymentSum(new BigDecimal("75.50")));
 
         BigDecimal result = paymentService.getTotalSumForAllUsers(from, to);
 
         assertEquals(new BigDecimal("75.50"), result);
 
-        verify(paymentRepository).findByTimestampBetween(from, to);
+        verify(paymentRepository).sumByTimestampBetween(from, to);
     }
 }
