@@ -29,6 +29,9 @@ public class Payment {
     @Field("status")
     private PaymentStatus status;
 
+    @Field("is_payment_successful")
+    private Boolean isPaymentSuccessful;
+
     @Field("timestamp")
     private LocalDateTime timestamp;
 

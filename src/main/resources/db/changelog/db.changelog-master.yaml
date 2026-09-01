@@ -1,3 +1,5 @@
 databaseChangeLog:
   - include:
       file: db/changelog/0.0.1/001-create-document-collection-payment.yaml
+  - include:
+      file: db/changelog/0.0.1/002-add-field-is-payment-successful.yaml

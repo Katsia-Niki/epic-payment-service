@@ -9,6 +9,7 @@ public record PaymentResponseDto(String id,
                                  Long userId,
                                  Long orderId,
                                  PaymentStatus status,
+                                 Boolean isPaymentSuccessful,
                                  LocalDateTime timestamp,
                                  BigDecimal paymentAmount) {
 }

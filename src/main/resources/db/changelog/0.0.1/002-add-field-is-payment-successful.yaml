@@ -1,0 +1,26 @@
+databaseChangeLog:
+  - changeSet:
+      id: add-field-is-payment-successful
+      author: nikiforova
+      changes:
+        - runCommand:
+            command: |
+              {
+                "collMod": "payments",
+                "validator": {
+                  "$jsonSchema": {
+                    "bsonType": "object",
+                    "required": ["order_id", "user_id", "status", "timestamp", "payment_amount"],
+                    "properties": {
+                      "order_id": { "bsonType": "long" },
+                      "user_id": { "bsonType": "long" },
+                      "status": { "bsonType": "string" },
+                      "timestamp": { "bsonType": "date" },
+                      "payment_amount": { "bsonType": "decimal" },
+                      "is_payment_successful": { "bsonType": "bool" }
+                    }
+                  }
+                },
+                "validationLevel": "strict",
+                "validationAction": "error"
+              }

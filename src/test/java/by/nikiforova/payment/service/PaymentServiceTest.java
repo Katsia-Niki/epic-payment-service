@@ -96,7 +96,7 @@ class PaymentServiceTest {
         when(paymentRepository.save(any(Payment.class))).thenReturn(saved);
 
         PaymentResponseDto responseDto = new PaymentResponseDto("newId1", 1L, 50L, PaymentStatus.SUCCESS,
-                saved.getTimestamp(), new BigDecimal(75));
+                Boolean.TRUE, saved.getTimestamp(), new BigDecimal(75));
 
         when(paymentMapper.toResponseDto(saved)).thenReturn(responseDto);
 
@@ -134,7 +134,7 @@ class PaymentServiceTest {
         when(paymentRepository.save(any(Payment.class))).thenReturn(saved);
 
         PaymentResponseDto responseDto = new PaymentResponseDto("newId1", 1L, 50L, PaymentStatus.FAILED,
-                saved.getTimestamp(), new BigDecimal(75));
+                Boolean.FALSE, saved.getTimestamp(), new BigDecimal(75));
 
         when(paymentMapper.toResponseDto(saved)).thenReturn(responseDto);
 
@@ -190,7 +190,7 @@ class PaymentServiceTest {
         when(paymentRepository.save(any(Payment.class))).thenReturn(saved);
 
         PaymentResponseDto responseDto = new PaymentResponseDto("newId1", 2L, 50L, PaymentStatus.SUCCESS,
-                saved.getTimestamp(), new BigDecimal(75));
+                Boolean.TRUE, saved.getTimestamp(), new BigDecimal(75));
         when(paymentMapper.toResponseDto(saved)).thenReturn(responseDto);
 
         PaymentResponseDto result = paymentService.createPayment(otherUserRequest);
@@ -215,7 +215,7 @@ class PaymentServiceTest {
         when(paymentRepository.findByUserId(1L)).thenReturn(List.of(payment));
 
         PaymentResponseDto responseDto = new PaymentResponseDto("newId1", 1L, 50L, PaymentStatus.SUCCESS,
-                payment.getTimestamp(), new BigDecimal(75));
+                Boolean.TRUE, payment.getTimestamp(), new BigDecimal(75));
         when(paymentMapper.toResponseDto(payment)).thenReturn(responseDto);
 
         List<PaymentResponseDto> result = paymentService.findPayments(1L, null, null);
@@ -246,7 +246,7 @@ class PaymentServiceTest {
         when(paymentRepository.findByOrderId(50L)).thenReturn(List.of(payment));
 
         PaymentResponseDto responseDto = new PaymentResponseDto("newId1", 1L, 50L, PaymentStatus.SUCCESS,
-                payment.getTimestamp(), new BigDecimal(75));
+                Boolean.TRUE, payment.getTimestamp(), new BigDecimal(75));
         when(paymentMapper.toResponseDto(payment)).thenReturn(responseDto);
 
         List<PaymentResponseDto> result = paymentService.findPayments(null, 50L, null);
@@ -277,7 +277,7 @@ class PaymentServiceTest {
         when(paymentRepository.findByStatus(PaymentStatus.SUCCESS)).thenReturn(List.of(payment));
 
         PaymentResponseDto responseDto = new PaymentResponseDto("newId1", 1L, 50L, PaymentStatus.SUCCESS,
-                payment.getTimestamp(), new BigDecimal(75));
+                Boolean.TRUE, payment.getTimestamp(), new BigDecimal(75));
         when(paymentMapper.toResponseDto(payment)).thenReturn(responseDto);
 
         List<PaymentResponseDto> result = paymentService.findPayments(null, null, PaymentStatus.SUCCESS);
@@ -373,7 +373,7 @@ class PaymentServiceTest {
         when(paymentRepository.findByUserId(2L)).thenReturn(List.of(payment));
 
         PaymentResponseDto responseDto = new PaymentResponseDto("newId2", 2L, 50L, PaymentStatus.SUCCESS,
-                payment.getTimestamp(), new BigDecimal(75));
+                Boolean.TRUE, payment.getTimestamp(), new BigDecimal(75));
         when(paymentMapper.toResponseDto(payment)).thenReturn(responseDto);
 
         List<PaymentResponseDto> result = paymentService.findPayments(2L, null, null);

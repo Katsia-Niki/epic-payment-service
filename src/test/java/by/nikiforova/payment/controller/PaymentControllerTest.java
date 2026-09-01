@@ -42,7 +42,7 @@ class PaymentControllerTest extends AbstractIntegrationTest {
         stubRandomNumber("2");
         PaymentRequestDto request = new PaymentRequestDto(1L, 50L, new BigDecimal("75.00"));
 
-        mockMvc.perform(post("/api/payments")
+        mockMvc.perform(post("/api/v1/payments")
                         .header("Authorization", "Bearer " + userToken(1L))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -50,6 +50,7 @@ class PaymentControllerTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.userId").value(1))
                 .andExpect(jsonPath("$.orderId").value(50))
                 .andExpect(jsonPath("$.status").value("SUCCESS"))
+                .andExpect(jsonPath("$.isPaymentSuccessful").value(true))
                 .andExpect(jsonPath("$.paymentAmount").value(75.00))
                 .andExpect(jsonPath("$.timestamp").exists());
 
@@ -57,6 +58,7 @@ class PaymentControllerTest extends AbstractIntegrationTest {
 
         assertThat(saved).hasSize(1);
         assertThat(saved.getFirst().getStatus()).isEqualTo(PaymentStatus.SUCCESS);
+        assertThat(saved.getFirst().getIsPaymentSuccessful()).isEqualTo(Boolean.TRUE);
         assertThat(saved.getFirst().getUserId()).isEqualTo(1L);
 
         WIRE_MOCK.verify(1, getRequestedFor(urlPathEqualTo("/integers")));

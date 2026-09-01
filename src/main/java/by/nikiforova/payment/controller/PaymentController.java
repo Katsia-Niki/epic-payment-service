@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/payments")
+@RequestMapping("/api/v1/payments")
 @RequiredArgsConstructor
 public class PaymentController {
 
@@ -34,7 +34,7 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.findPayments(userId, orderId, status));
     }
 
-    @GetMapping("/sum/user/{userId}")
+    @GetMapping("/total/user/{userId}")
     public ResponseEntity<BigDecimal> getTotalSumForUser(@PathVariable Long userId,
                                                   @RequestParam LocalDateTime from,
                                                   @RequestParam LocalDateTime to) {
@@ -42,7 +42,7 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.getTotalSumForUser(userId, from, to));
     }
 
-    @GetMapping("/sum")
+    @GetMapping("/total")
     public ResponseEntity<BigDecimal> getTotalSum(@RequestParam LocalDateTime from,
                                                   @RequestParam LocalDateTime to) {
         return ResponseEntity.ok(paymentService.getTotalSumForAllUsers(from, to));

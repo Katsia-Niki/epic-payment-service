@@ -33,11 +33,14 @@ public class PaymentService {
     public PaymentResponseDto createPayment(PaymentRequestDto  paymentRequestDto) {
         SecurityUtils.checkAccess(paymentRequestDto.userId());
 
-        int number = randomNumberClient.getRandomNumber();
-        PaymentStatus status = (number % 2 == 0) ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
-
         Payment payment = paymentMapper.toEntity(paymentRequestDto);
         payment.setTimestamp(LocalDateTime.now(ZoneId.of("Europe/Minsk")));
+        payment.setStatus(PaymentStatus.PENDING);
+
+        int number = randomNumberClient.getRandomNumber();
+        payment.setIsPaymentSuccessful(number % 2 == 0);
+        PaymentStatus status = payment.getIsPaymentSuccessful() ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
+
         payment.setStatus(status);
 
         Payment savedPayment = paymentRepository.save(payment);
