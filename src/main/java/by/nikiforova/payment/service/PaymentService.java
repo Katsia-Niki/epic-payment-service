@@ -1,0 +1,95 @@
+package by.nikiforova.payment.service;
+
+import by.nikiforova.payment.client.RandomNumberClient;
+import by.nikiforova.payment.dto.PaymentSum;
+import by.nikiforova.payment.dto.request.PaymentRequestDto;
+import by.nikiforova.payment.dto.response.PaymentResponseDto;
+import by.nikiforova.payment.entity.Payment;
+import by.nikiforova.payment.entity.PaymentStatus;
+import by.nikiforova.payment.kafka.PaymentKafkaProducer;
+import by.nikiforova.payment.mapper.PaymentMapper;
+import by.nikiforova.payment.repository.PaymentRepository;
+import by.nikiforova.payment.util.SecurityUtils;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.List;
+
+import static by.nikiforova.payment.util.SecurityUtils.isAdmin;
+
+@Service
+@RequiredArgsConstructor
+public class PaymentService {
+
+    private final PaymentRepository paymentRepository;
+    private final PaymentMapper paymentMapper;
+    private final RandomNumberClient randomNumberClient;
+    private final PaymentKafkaProducer paymentKafkaProducer;
+
+    public PaymentResponseDto createPayment(PaymentRequestDto  paymentRequestDto) {
+        SecurityUtils.checkAccess(paymentRequestDto.userId());
+
+        Payment payment = paymentMapper.toEntity(paymentRequestDto);
+        payment.setTimestamp(LocalDateTime.now(ZoneId.of("Europe/Minsk")));
+        payment.setStatus(PaymentStatus.PENDING);
+
+        int number = randomNumberClient.getRandomNumber();
+        payment.setIsPaymentSuccessful(number % 2 == 0);
+        PaymentStatus status = payment.getIsPaymentSuccessful() ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
+
+        payment.setStatus(status);
+
+        Payment savedPayment = paymentRepository.save(payment);
+
+        paymentKafkaProducer.sendCreatePaymentEvent(savedPayment);
+
+        return paymentMapper.toResponseDto(savedPayment);
+    }
+
+    public List<PaymentResponseDto> findPayments(Long userId, Long orderId, PaymentStatus status) {
+        int criteriaCount = 0;
+        if (userId != null) {
+            criteriaCount++;
+        }
+        if (orderId != null) {
+            criteriaCount++;
+        }
+        if (status != null) {
+            criteriaCount++;
+        }
+        if (criteriaCount != 1) {
+            throw new IllegalArgumentException("Provide exactly one filter: userId, orderId or status");
+        }
+
+        if (userId != null) {
+            SecurityUtils.checkAccess(userId);
+            return paymentRepository.findByUserId(userId).stream().map(paymentMapper::toResponseDto).toList();
+        }
+        if (orderId != null) {
+            if (!isAdmin()) {
+                throw new AccessDeniedException("Access denied");
+            }
+            return paymentRepository.findByOrderId(orderId).stream().map(paymentMapper::toResponseDto).toList();
+        }
+        if (!isAdmin()) {
+            throw new AccessDeniedException("Access denied");
+        }
+        return paymentRepository.findByStatus(status).stream().map(paymentMapper::toResponseDto).toList();
+    }
+
+    public BigDecimal getTotalSumForUser(Long userId, LocalDateTime from, LocalDateTime to) {
+        SecurityUtils.checkAccess(userId);
+        PaymentSum sum = paymentRepository.sumByUserIdAndTimestampBetween(userId, from, to);
+        return sum == null || sum.total() == null ? BigDecimal.ZERO : sum.total();
+    }
+
+    public BigDecimal getTotalSumForAllUsers(LocalDateTime from, LocalDateTime to) {
+        PaymentSum sum = paymentRepository.sumByTimestampBetween(from, to);
+        return sum == null || sum.total() == null ? BigDecimal.ZERO : sum.total();
+    }
+
+}
