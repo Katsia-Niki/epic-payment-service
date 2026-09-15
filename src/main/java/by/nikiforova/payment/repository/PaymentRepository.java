@@ -14,6 +14,7 @@ public interface PaymentRepository extends MongoRepository<Payment, String> {
     List<Payment> findByUserId(Long userId);
     List<Payment> findByOrderId(Long orderId);
     List<Payment> findByStatus(PaymentStatus status);
+    boolean existsByOrderIdAndStatus(Long orderId, PaymentStatus status);
 
     @Aggregation(pipeline = {
             "{ $match: { user_id: ?0, timestamp: { $gte: ?1, $lte: ?2 }, status: 'SUCCESS'} }",
