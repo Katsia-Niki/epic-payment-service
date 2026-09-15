@@ -33,6 +33,11 @@ public class PaymentService {
     public PaymentResponseDto createPayment(PaymentRequestDto  paymentRequestDto) {
         SecurityUtils.checkAccess(paymentRequestDto.userId());
 
+        if (paymentRepository.existsByOrderIdAndStatus(paymentRequestDto.orderId(), PaymentStatus.SUCCESS)) {
+            throw new IllegalArgumentException(
+                    "Order " + paymentRequestDto.orderId() + " is already paid");
+        }
+
         Payment payment = paymentMapper.toEntity(paymentRequestDto);
         payment.setTimestamp(LocalDateTime.now(ZoneId.of("Europe/Minsk")));
         payment.setStatus(PaymentStatus.PENDING);

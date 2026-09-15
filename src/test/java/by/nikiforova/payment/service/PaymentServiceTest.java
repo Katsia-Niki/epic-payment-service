@@ -161,6 +161,20 @@ class PaymentServiceTest {
     }
 
     @Test
+    @DisplayName("createPayment - IllegalArgumentException")
+    void createPaymentWhenOrderAlreadyPaidShouldThrow() {
+        when(paymentRepository.existsByOrderIdAndStatus(50L, PaymentStatus.SUCCESS))
+                .thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> paymentService.createPayment(paymentRequestDto));
+
+        verify(randomNumberClient, never()).getRandomNumber();
+        verify(paymentRepository, never()).save(any());
+        verify(paymentKafkaProducer, never()).sendCreatePaymentEvent(any());
+    }
+
+    @Test
     @DisplayName("createPayment - admin can create for other user")
     void createPaymentWhenAdminAndOtherUserShouldSave() {
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken("Admin", null,
